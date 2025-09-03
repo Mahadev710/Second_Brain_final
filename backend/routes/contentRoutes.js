@@ -1,29 +1,4 @@
-// import express from 'express';
-// import {
-//     getContent,
-//     createContent,
-//     updateContent,
-//     deleteContent,
-//     bulkDeleteContent
-// } from '../controllers/contentController.js'
-
-// import {protect} from '../middleware/authMiddleware.js'
-
-// const router=express.Router();
-
-// router.use(protect);
-
-// router.route('/')
-//      .get(getContent)
-//      .post(createContent);
-
-// router.post('/bulk-delete',bulkDeleteContent);
-
-// router.route('/:id')
-//    .put(updateContent)
-//    .delete(deleteContent);
-
-// export default router;   
+  
 import express from 'express';
 import {
     getContent,

@@ -1,158 +1,3 @@
-// import Content from '../models/contentModel.js'
-
-// const getContent = async (req, res) => {
-//   try {
-//     let query = { user: req.user.id };
-
-//     if (req.query.type && req.query.type !== 'all') {
-//       query.type = req.query.type;
-//     }
-//     if (req.query.tag) {
-//       query.tags = req.query.tag;
-//     }
-
-//     // Server-side text search
-//     if (req.query.search) {
-//       query.$text = { $search: req.query.search };
-//     }
-
-//     // Pagination
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = parseInt(req.query.limit) || 10;
-//     const skip = (page - 1) * limit;
-
-//     // Get total count for pagination
-//     const total = await Content.countDocuments(query);
-    
-//     // Get content with pagination
-//     const contents = await Content.find(query)
-//       .sort({ createdAt: -1 })
-//       .skip(skip)
-//       .limit(limit);
-
-//     res.status(200).json({
-//       contents,
-//       pagination: {
-//         currentPage: page,
-//         totalPages: Math.ceil(total / limit),
-//         totalItems: total,
-//         itemsPerPage: limit
-//       }
-//     });
-//   } catch (error) {
-//     console.error('Get content error:', error);
-//     res.status(500).json({ message: 'Error fetching content', error: error.message });
-//   }
-// };
-
-// const createContent = async (req, res) => {
-//   try {
-   
-//     const { type } = req.body;
-//     if (!type) {
-//       return res.status(400).json({ message: 'Content type is required' });
-//     }
-
- 
-//     const validTypes = ['tweaks', 'playlists', 'notes', 'important-links', 'pdfs', 'images'];
-//     if (!validTypes.includes(type)) {
-//       return res.status(400).json({ message: 'Invalid content type' });
-//     }
-//     const newContent = await Content.create({
-//       ...req.body,
-//       user: req.user.id,
-//     });
-    
-//     res.status(201).json(newContent);
-//   } catch (error) {
-//     console.error('Create content error:', error);
-//     if (error.name === 'ValidationError') {
-//       return res.status(400).json({ 
-//         message: 'Validation error', 
-//         errors: Object.values(error.errors).map(e => e.message)
-//       });
-//     }
-//     res.status(400).json({ message: 'Error creating content', error: error.message });
-//   }
-// };
-
-// const updateContent = async (req, res) => {
-//   try {
-//     const content = await Content.findById(req.params.id);
-    
-//     if (!content) {
-//       return res.status(404).json({ message: 'Content not found' });
-//     }
-    
-//     // Check if user owns the content
-//     if (content.user.toString() !== req.user.id) {
-//       return res.status(401).json({ message: 'User not authorized' });
-//     }
-
-//     const updatedContent = await Content.findByIdAndUpdate(
-//       req.params.id,
-//       req.body,
-//       { new: true, runValidators: true }
-//     );
-
-//     res.status(200).json(updatedContent);
-//   } catch (error) {
-//     console.error('Update content error:', error);
-//     if (error.name === 'ValidationError') {
-//       return res.status(400).json({ 
-//         message: 'Validation error', 
-//         errors: Object.values(error.errors).map(e => e.message)
-//       });
-//     }
-//     res.status(500).json({ message: 'Error updating content', error: error.message });
-//   }
-// };
-
-// const deleteContent = async (req, res) => {
-//   try {
-//     const content = await Content.findById(req.params.id);
-    
-//     if (!content) {
-//       return res.status(404).json({ message: 'Content not found' });
-//     }
-    
-//     if (content.user.toString() !== req.user.id) {
-//       return res.status(401).json({ message: 'User not authorized' });
-//     }
-    
-//     await Content.findByIdAndDelete(req.params.id);
-//     res.status(200).json({ message: 'Content deleted successfully', id: req.params.id });
-//   } catch (error) {
-//     console.error('Delete content error:', error);
-//     res.status(500).json({ message: 'Error deleting content', error: error.message });
-//   }
-// };
-
-// const bulkDeleteContent = async (req, res) => {
-//   try {
-//     const { ids } = req.body;
-    
-//     if (!ids || !Array.isArray(ids) || ids.length === 0) {
-//       return res.status(400).json({ message: 'Please provide an array of content IDs' });
-//     }
-
-//     const result = await Content.deleteMany({
-//       _id: { $in: ids },
-//       user: req.user.id
-//     });
-
-//     res.status(200).json({
-//       message: `Deleted ${result.deletedCount} items`,
-//       deletedCount: result.deletedCount
-//     });
-//   } catch (error) {
-//     console.error('Bulk delete error:', error);
-//     res.status(500).json({ message: 'Error deleting content', error: error.message });
-//   }
-// };
-
-// export { getContent, createContent, updateContent, deleteContent, bulkDeleteContent }
-
 
 import Content from '../models/contentModel.js'
 import multer from 'multer';
@@ -236,10 +81,16 @@ const createContent = async (req, res) => {
       return res.status(400).json({ message: 'Invalid content type' });
     }
 
+    // Prepare content data
+    let contentData = {
+      ...req.body,
+      user: req.user.id,
+    };
+
     // Handle file upload for pdfs and images
-    let fileData = null;
     if (req.file && (type === 'pdfs' || type === 'images')) {
-      fileData = {
+      contentData = {
+        ...contentData,
         fileName: req.file.originalname,
         fileSize: req.file.size,
         fileType: req.file.mimetype,
@@ -247,13 +98,12 @@ const createContent = async (req, res) => {
       };
     }
 
-    const newContent = await Content.create({
-      ...req.body,
-      ...fileData,
-      user: req.user.id,
-    });
+    const newContent = await Content.create(contentData);
     
-    res.status(201).json(newContent);
+    // Return the created content with fileData for immediate display
+    const responseContent = await Content.findById(newContent._id).select('+fileData');
+    
+    res.status(201).json(responseContent);
   } catch (error) {
     console.error('Create content error:', error);
     if (error.name === 'ValidationError') {
@@ -295,7 +145,7 @@ const updateContent = async (req, res) => {
       req.params.id,
       updateData,
       { new: true, runValidators: true }
-    );
+    ).select('+fileData');
 
     res.status(200).json(updatedContent);
   } catch (error) {

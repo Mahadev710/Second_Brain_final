@@ -1,1 +1,14 @@
 @import "tailwindcss";
+/* Add this to your global CSS file (globals.css, index.css, or App.css) */
+
+html {
+  @apply bg-gray-900; /* or whatever dark color matches your app */
+}
+
+body {
+  @apply bg-gray-900 min-h-screen m-0 p-0;
+}
+
+#root {
+  @apply min-h-screen bg-gray-900;
+}

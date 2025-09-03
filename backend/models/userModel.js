@@ -27,7 +27,5 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// No separate index needed here; `unique: true` already creates it
-// userSchema.index({ username: 1 });
 
 export default mongoose.model('User', userSchema);
