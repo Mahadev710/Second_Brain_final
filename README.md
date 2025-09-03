@@ -1,7 +1,7 @@
 # 🧠 Second Brain Application
 
 A modern **personal knowledge management system** where you can store, organize, and retrieve anything — notes, links, PDFs, images, playlists, and more.  
-Think of it as your **digital second brain**.
+Think of it as your **digital brain**.
 
 ---
 
